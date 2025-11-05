@@ -166,6 +166,12 @@ def clean_small_components(image, min_area=30):
     return cleaned
 
 
+def  erode(image, kernel_size=(3,3), iterations=1):
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, kernel_size)
+    return cv.erode(image, kernel, iterations=iterations)
+    
+
+
 def find_contours(image, line_percentil=90, char_percentil=50,
                   proportion_limit=5, noise_size=10):
     # Find contours of characters and filter them based on size percentiles
@@ -293,10 +299,11 @@ def split_lines(image, mask, boxes, character_size, big_character_size):
                 current_box_number < len(boxes)): # add box to line
                 box = boxes[current_box_number]
                 current_mask.append(box)
+                x0, y0 = x, y
                 x = min(box[0], x) 
                 y = min(box[1], y)
-                x1 = max(box[0] + box[2], x + w)
-                y1 = max(box[1] + box[3], y + h)
+                x1 = max(box[0] + box[2], x0 + w)
+                y1 = max(box[1] + box[3], y0 + h)
                 w = x1 - x
                 h = y1 - y
                 current_box_number += 1

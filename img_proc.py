@@ -116,7 +116,6 @@ def crop_to_content(image):
     contours, _ = cv.findContours(
         vertical_lines, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     # Show detected contours on the vertical_lines image
-    contour_image = cv.cvtColor(vertical_lines, cv.COLOR_GRAY2BGR)
     # Filter for long vertical lines near the left and right sides
     height, width = image.shape
     min_line_length = int(0.5 * height)  # at least 50% of image height
@@ -166,10 +165,9 @@ def clean_small_components(image, min_area=30):
     return cleaned
 
 
-def  erode(image, kernel_size=(3,3), iterations=1):
+def erode(image, kernel_size=(3, 3), iterations=1):
     kernel = cv.getStructuringElement(cv.MORPH_RECT, kernel_size)
     return cv.erode(image, kernel, iterations=iterations)
-    
 
 
 def find_contours(image, line_percentil=90, char_percentil=50,
@@ -199,7 +197,8 @@ def find_contours(image, line_percentil=90, char_percentil=50,
 
     character_size = np.percentile([box[3] for box in boxes], char_percentil)
     print(f"Character size ({char_percentil}. percentil): {character_size}")
-    big_character_size = np.percentile([box[3] for box in boxes], line_percentil)
+    big_character_size = np.percentile(
+        [box[3] for box in boxes], line_percentil)
     print(f" ({line_percentil}. percentil): {big_character_size}")
     while big_character_size / character_size > proportion_limit:
         boxes_new = []
@@ -214,8 +213,10 @@ def find_contours(image, line_percentil=90, char_percentil=50,
                 boxes_new.append((x, y, w, h))
         boxes = boxes_new
         # znovu seřadíme podle Y
-        character_size = np.percentile([box[3] for box in boxes], char_percentil)
-        big_character_size = np.percentile([box[3] for box in boxes], line_percentil)
+        character_size = np.percentile(
+            [box[3] for box in boxes], char_percentil)
+        big_character_size = np.percentile(
+            [box[3] for box in boxes], line_percentil)
     return boxes, character_size, big_character_size
 
 
@@ -260,7 +261,7 @@ class Line():
 def split_lines(image, mask, boxes, character_size, big_character_size):
     # Split the image into lines based on the boxes and gaps between them
     boxes = sorted(boxes, key=lambda b: b[1] + b[3] / 2)
-        
+
     current_y = 0
     current_box_number = 0
     box = boxes[current_box_number]
@@ -270,7 +271,7 @@ def split_lines(image, mask, boxes, character_size, big_character_size):
     line_width = 0
     line_height = 0
     arr = np.array(mask)
-            
+
     height, width = mask.shape
     # move from top to bottom
     while current_y < height:
@@ -279,46 +280,46 @@ def split_lines(image, mask, boxes, character_size, big_character_size):
         counts = np.sum(line == 255)  # count white pixels (text)
 
         line_width = max(line_width, counts)
-            
-        if status == "blank": 
-            if counts > character_size * 6: # line starts
+
+        if status == "blank":
+            if counts > character_size * 6:  # line starts
                 status = "line"
         elif status == "line":
             line_height += 1
             if (line_height > big_character_size and
                 current_y > box[1] + box[3] / 2 and
-                (counts < line_width / 2 or 
-                line_width - counts > character_size * 4) ):
-                print(f"Line ends at y={current_y}, counts={counts}, line_width={line_width}")
+                (counts < line_width / 2 or
+                 line_width - counts > character_size * 4)):
+                print(
+                    f"Line ends at y={current_y}, counts={counts}, line_width={line_width}")
                 status = "end"
         if status == "end":
             (x, y, w, h) = box
             current_mask = []
             # find all boxes where middle is uper then line's bottom
             while (box[1] + box[3] / 2 < current_y + big_character_size / 4 and
-                current_box_number < len(boxes)): # add box to line
+                   current_box_number < len(boxes)):  # add box to line
                 box = boxes[current_box_number]
                 current_mask.append(box)
                 x0, y0 = x, y
-                x = min(box[0], x) 
+                x = min(box[0], x)
                 y = min(box[1], y)
                 x1 = max(box[0] + box[2], x0 + w)
                 y1 = max(box[1] + box[3], y0 + h)
                 w = x1 - x
                 h = y1 - y
                 current_box_number += 1
-                
-            
+
             lines.append(Line(image, (x, y, w, h), current_mask))
             status = "blank"
             line_width = 0
             line_height = 0
-        
+
         current_y += 1
-        
+
     return lines
-            
-        
+
+
 def show_image(image, title="Image", cmap='gray'):
     plt.imshow(image, cmap=cmap)
     plt.title(title)
@@ -338,7 +339,7 @@ def show_lines(image, lines):
     for line in lines:
         (x, y, w, h) = line.box
         # Draw rectangle around each line
-        cv.rectangle(canvas, (x, y), (x + w, y + h), (0, 255, 255), 3, 
+        cv.rectangle(canvas, (x, y), (x + w, y + h), (0, 255, 255), 3,
                      lineType=cv.LINE_AA)
         # Get contours of the line
         subcontours = line.find_contours()
@@ -352,13 +353,13 @@ def show_lines(image, lines):
     plt.title("Detected lines")
     plt.axis('off')
     plt.show()
-            
+
 
 def show_separated_lines(lines):
     for i, line in enumerate(lines):
         x, y, w, h = line.box
         print(f"Line {i}: {x}, {y}, {w}, {h}")
-        plt.figure(figsize=(10, 2)) 
+        plt.figure(figsize=(10, 2))
         plt.imshow(line.image, cmap='gray')
         plt.axis('off')
         plt.title(f"Line {i}")
@@ -368,7 +369,7 @@ def show_separated_lines(lines):
 def save_lines(image_path, image_filename, start_row_number, lines):
     extension = image_filename.split('.')[-1]
     base_name = image_filename.replace(f'.{extension}', '')
-    for i, line in enumerate(lines):        
-        output_path = os.path.join(image_path, 
+    for i, line in enumerate(lines):
+        output_path = os.path.join(image_path,
                                    f"{base_name}_line_{i+start_row_number}.{extension}")
         save_image(output_path, line.image)

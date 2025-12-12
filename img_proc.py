@@ -1,3 +1,6 @@
+# !/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 # Functions to do image transformations
 __author__ = "Nina Belyavskaya"
 

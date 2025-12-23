@@ -4,11 +4,13 @@
 # Functions to do image OCR
 __author__ = "Nina Belyavskaya"
 
-from doctr.io import DocumentFile
+# from doctr.io import decode_img_as_tensor
 from doctr.models import ocr_predictor
 from PIL import Image
 import numpy as np
 import torch
+
+from img_proc import BaseLineSplitter
 
 # Load the model once (CPU or GPU)
 predictor = ocr_predictor(
@@ -20,16 +22,18 @@ predictor = ocr_predictor(
 ).to("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def split_image_into_lines(image_path_or_bytes) -> list[Image.Image]:
+def split_image_into_lines(image: np.ndarray) -> list[Image.Image]:
     """
     Returns a list of PIL Images, each containing one text line,
     in correct reading order (left→right, top→bottom).
     """
-    # docTR accepts path, url, PIL Image, np.array or bytes
-    doc = DocumentFile.from_images(image_path_or_bytes)
+    # Convert grayscale to RGB if necessary
+    if image.ndim == 2:
+        image = Image.fromarray(image).convert("RGB")
+        image = np.asarray(image)
 
     # Run detection only (much faster than full OCR)
-    result = predictor(doc)
+    result = predictor([image])
     result.show()
 
     return result.pages
@@ -76,3 +80,12 @@ def crop_lines_from_pages(image, pages, padding=3) -> list[Image.Image]:
                 line_crop = np.where(mask > 0, line_crop, 255)
                 line_crops.append(line_crop)
     return line_crops
+
+
+class DocTrLineSplitter(BaseLineSplitter):
+    """ Line splitter using docTR OCR model. """
+
+    def split_image_into_lines(self, image: np.ndarray) -> list[np.ndarray]:
+        pages = split_image_into_lines(image)
+        line_crops = crop_lines_from_pages(image, pages, padding=3)
+        return line_crops

@@ -376,3 +376,29 @@ def save_lines(image_path, image_filename, start_row_number, lines):
         output_path = os.path.join(image_path,
                                    f"{base_name}_line_{i+start_row_number}.{extension}")
         save_image(output_path, line.image)
+
+
+def preprocess(self, image: np.ndarray, to_erode: bool = True) -> np.ndarray:
+    image = improve_image(image)
+    image = crop_to_content(image)
+    image = morphological_operations(image)
+    image = clean_small_components(image)
+    if to_erode:
+        image = erode(image)
+    return image
+
+
+class BaseLineSplitter:
+    """ Base class for line splitters. """
+    def split_into_lines(self, image: np.ndarray) -> list[np.ndarray]:
+        raise NotImplementedError("Subclasses must implement this method.")
+
+
+class ContourBasedLineSplitter(BaseLineSplitter):
+    """ Line splitter using openCV contour detection. """
+    def split_into_lines(self, image: np.ndarray) -> list[np.ndarray]:
+        boxes, char_size, big_char_size = find_contours(image)
+        mask = create_mask_image(image, boxes)
+        lines = split_lines(image, mask, boxes, char_size, big_char_size)
+        line_images = [line.image for line in lines]
+        return line_images

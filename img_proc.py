@@ -8,6 +8,7 @@ import os.path
 import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
+from base import BaseLineSplitter
 
 
 def read_gray_image(path):
@@ -386,12 +387,6 @@ def preprocess(self, image: np.ndarray, to_erode: bool = True) -> np.ndarray:
     if to_erode:
         image = erode(image)
     return image
-
-
-class BaseLineSplitter:
-    """ Base class for line splitters. """
-    def split_into_lines(self, image: np.ndarray) -> list[np.ndarray]:
-        raise NotImplementedError("Subclasses must implement this method.")
 
 
 class ContourBasedLineSplitter(BaseLineSplitter):

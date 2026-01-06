@@ -1,16 +1,14 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Functions to do image OCR
+# Functions to do image OCR with docTR library
 __author__ = "Nina Belyavskaya"
 
-# from doctr.io import decode_img_as_tensor
 from doctr.models import ocr_predictor
 from PIL import Image
 import numpy as np
 import torch
-
-from img_proc import BaseLineSplitter
+from base import BaseLineSplitter, BaseOCR
 
 # Load the model once (CPU or GPU)
 predictor = ocr_predictor(
@@ -89,3 +87,19 @@ class DocTrLineSplitter(BaseLineSplitter):
         pages = split_image_into_lines(image)
         line_crops = crop_lines_from_pages(image, pages, padding=3)
         return line_crops
+
+
+class DocTrOCR(BaseOCR):
+    """ OCR processor using docTR model. """
+
+    def recognise_line(self, line_image: np.ndarray) -> str:
+        # Convert to RGB if necessary
+        if line_image.ndim == 2:
+            line_img = Image.fromarray(line_image).convert("RGB")
+            line_img = np.asarray(line_img)
+
+            result = predictor([line_img])
+            # Each result contains one page with one block and one line
+            text = result.pages[0].blocks[0].lines[0].words
+            recognized_text = ' '.join([word.value for word in text])
+        return recognized_text

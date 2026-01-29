@@ -1,6 +1,6 @@
 # OCR Handwritten - Draft
 
-This repository is a **draft** project to experiment with different possibilities for splitting images containing handwritten text into individual text lines.
+This repository is a **draft** project to experiment with different possibilities for recognize characters (OCR) from images containing handwritten text.
 
 The main goal is to explore and prototype methods for detecting and segmenting handwritten lines in scanned images or photographs. The code and approaches here are not final and are subject to change as new ideas are tested.
 

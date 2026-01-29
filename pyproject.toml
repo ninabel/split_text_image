@@ -1,0 +1,16 @@
+[project]
+name = "ocr-handwritten"
+version = "0.0.1"
+description = "OCR images containing handwritten text"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "jiwer==3.0.4",
+    "numpy~=2.2.6",
+    "opencv-python~=4.12.0",
+    "pillow~=11.3.0",
+    "pytesseract>=0.3.10",
+    "python-doctr>=1.0.0",
+    "torch>=2.2.0",
+    "transformers>=4.37.2",
+]

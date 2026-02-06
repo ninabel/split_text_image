@@ -10,6 +10,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from base import BaseLineSplitter
 
+def read_image(path):
+    # read image from file by path
+    image = cv.imread(path)
+    return cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+
 
 def read_gray_image(path):
     # read image from file by path

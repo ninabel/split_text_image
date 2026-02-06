@@ -24,7 +24,7 @@ class BaseOCR():
     def __init__(self, line_splitter: BaseLineSplitter = None):
         self.line_splitter = line_splitter
 
-    def recognise(self, line_image: np.ndarray) -> str:
+    def recognize(self, line_image: np.ndarray) -> str:
         """
         Recognizes text from a single line image.
         Args:
@@ -37,6 +37,6 @@ class BaseOCR():
     def recognize_text(self, image: np.ndarray) -> str:
         """ Recognizes text from the entire image by splitting into lines first. """
         if self.line_splitter is None:
-            return self.recognise(image)
+            return self.recognize(image)
         lines = self.line_splitter.split_into_lines(image)
-        return "\n".join([self.recognise(line) for line in lines])
+        return "\n".join([self.recognize(line) for line in lines])

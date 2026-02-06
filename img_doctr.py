@@ -92,7 +92,7 @@ class DocTrLineSplitter(BaseLineSplitter):
 class DocTrOCR(BaseOCR):
     """ OCR processor using docTR model. """
 
-    def recognise_line(self, line_image: np.ndarray) -> str:
+    def recognize(self, line_image: np.ndarray) -> str:
         # Convert to RGB if necessary
         if line_image.ndim == 2:
             line_img = Image.fromarray(line_image).convert("RGB")

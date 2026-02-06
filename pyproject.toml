@@ -5,7 +5,10 @@ description = "OCR images containing handwritten text"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "deepseek-ocr>=0.3.0",
+    "huggingface-hub[hf-xet]>=0.36.0",
     "jiwer==3.0.4",
+    "matplotlib>=3.10.8",
     "numpy~=2.2.6",
     "opencv-python~=4.12.0",
     "pillow~=11.3.0",
